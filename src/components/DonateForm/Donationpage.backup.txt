@@ -1,0 +1,282 @@
+/* eslint jsx-a11y/label-has-for:0 */
+
+import React from 'react';
+import update from 'immutability-helper';
+import _ from 'lodash';
+import Helmet from 'react-helmet';
+import { Link } from 'gatsby';
+import styled from 'styled-components';
+import { Layout, Wrapper, Header } from 'components';
+import { media } from '../../utils/media';
+import Button from "@material-ui/core/Button";
+import TextField from '@material-ui/core/TextField';
+
+import config from 'config/SiteConfig';
+import { func } from 'prop-types';
+import SetBlockchain from '../../models/api-post';
+
+const Content = styled.div`
+  grid-column: 2;
+  box-shadow: 0 4px 120px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  padding: 2rem 4rem;
+  background-color: ${props => props.theme.colors.bg};
+  z-index: 1000;
+  margin-top: -2rem;
+  @media ${media.tablet} {
+    padding: 3rem 3rem;
+  }
+  @media ${media.phone} {
+    padding: 2rem 1.5rem;
+  }
+  form {
+    p {
+      margin: 0 px;
+      label,
+      input {
+        display: block;
+      }
+      input {
+        min-width: 30em;
+        margin-left: 2em;
+        margin-top: 0.5rem;
+      }
+      textarea {
+        resize: vertical;
+        min-width: 30em;
+        min-height: 5em;
+        width: 100%;
+        margin-top: 0.5rem;
+      }
+    }
+  }
+`;
+
+const SIconButtons = styled.div`
+  display: flex;
+  padding: 0.5em;
+  flex-direction: row;
+  justify-content: flex-end;
+`;
+
+const DateDiv = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  input {
+    input-width: 10em;
+  }
+  div {
+    margin-top: 0rem;
+    margin-right:2em;
+  }
+`;
+
+const SButton = styled.div `
+  margin-left: 1.5em;
+`;
+
+export default function DonationPage(donationId) {
+  const { data } = this.state;
+  const donationIx = data.findIndex(item => item.id === donationId);
+  const donation = data[donationIx];
+
+  const closeWindow = () => {
+    this.setState({
+      pageState: config.pageState[config.siteState].rootList,
+      pageEntityId: ''
+    });
+  }
+
+  const changeHandler = type => event => {
+    this.setState({
+      data: update(this.state.data, { [donationIx]: { [type]: { $set: event.target.value } } })
+    });
+  }
+
+  const saveNew = () => {
+    const accountInfo = {
+      entityId: 'new',
+      accountNumber: donation.account,
+      routingNumber: donation.routing,
+    }
+    console.log('DonationPage.saveNew() bankaccount ');
+    SetBlockchain('bankaccount', accountInfo)
+      .then(result => {
+        console.log('DonationPage.saveNew() donation 1 ', result);
+        bankaccount = result.data.entityId;
+        let formData = _.cloneDeep(donation);
+        formData.expirationOn = donation.expireOn;
+        formData.name = donation.title;
+        formData.entityId = donation.id;
+        formData.bankaccount = bankaccount;
+        formData.customer = donation.customer;
+        formData.donor = donation.donor;
+        formData.rules = donation.rules.split('.');
+        console.log('DonationPage.saveNew() donation 2 ');
+        return SetBlockchain('donation', formData);
+      })
+      .then(result => {
+        console.log('DonationPage.saveNew() donation saved 1 ');
+        this.setState({
+          data: update(this.state.data, { [donationIx]: { [id]: { $set: result.data.entityId } } })
+        }, () => {
+          console.log('DonationPage.saveNew() donation saved 2 ');
+          let newblock = this.state.data.filter(item => item.id === 'blank');
+          newblock.id = 'new';
+          this.setState({ data: [this.state.data, newblock] });
+        })
+      })
+      .catch(err => {
+        console.log('DonationPage.saveNew() error ', err);
+      })
+    closeWindow();
+  }
+
+  const saveEdit = () => {
+    let formData = _.cloneDeep(donation);
+    formData.expirationOn = donation.expireOn;
+    formData.name = donation.title;
+    formData.entityId = donation.id;
+    formData.rules = donation.rules.split('.');
+    SetBlockchain('donation', formData)
+      .then(result => {
+        if (result.status === 200 && itemId === 'new') {
+          this.setState(
+            { data: update(this.state.data, { [donationIx]: { [id]: { $set: result.entityId } } }) },
+            () => { console.log(result.statusText) }
+          );
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
+    closeWindow();
+  }
+
+  const submitHandler = event => {
+    event.preventDefault();
+    console.log('Donation submitHandler --------', donation);
+    donation.id === 'new' ? saveNew() : saveEdit();
+  }
+
+  const showAccount = () => {
+    return (
+      <DateDiv>
+        <TextField
+          variant="outlined"
+          id="account"
+          label="account number"
+          type="text"
+          value={donation.account}
+          onChange={changeHandler('account')}
+        />
+        <TextField
+          variant="outlined"
+          id="routing"
+          label="routing number"
+          type="text"
+          value={donation.routing}
+          onChange={changeHandler('routing')}
+        />
+      </DateDiv>
+    )
+  }
+
+  return (
+    <div>
+      <Content>
+        <p>Make Donation</p>
+        <form name="contact-form" method="post" onSubmit={submitHandler}>
+          <div>
+            <p>
+              <TextField
+                variant="outlined"
+                id="name"
+                label="name"
+                value={donation.title}
+                margin="normal"
+                onChange={changeHandler('title')}
+              />
+            </p>
+            <p>
+              <TextField
+                variant="outlined"
+                id="amount"
+                label="amount"
+                value={donation.amount}
+                margin="normal"
+                onChange={changeHandler('amount')}
+              />
+            </p>
+            <DateDiv>
+              <div>
+                <TextField
+                  variant="outlined"
+                  id="availableOn"
+                  label="availableOn"
+                  type="date"
+                  value={donation.availableOn}
+                  onChange={changeHandler('availableOn')}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </div>
+              <div>
+                <TextField
+                  variant="outlined"
+                  id="expireOn"
+                  label="expireOn"
+                  type="date"
+                  value={donation.expireOn}
+                  onChange={changeHandler('expireOn')}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </div>
+            </DateDiv>
+            {donation.id == 'new' && showAccount()}
+            <p>
+              <TextField
+                variant="outlined"
+                id="rules"
+                label="Rules"
+                multiline
+                rowsMax="3"
+                value={donation.rules}
+                onChange={changeHandler('rules')}
+                margin="normal"
+              />
+            </p>
+            <p>
+              <TextField
+                variant="outlined"
+                id="description"
+                label="description"
+                multiline
+                rowsMax="3"
+                value={donation.description}
+                onChange={changeHandler('description')}
+                margin="normal"
+              />
+            </p>
+          </div>
+          <SIconButtons>
+            <SButton>
+              <Button variant="outlined" color="primary" type="submit">
+                Submit
+              </Button>
+            </SButton>
+            <SButton>
+              <Button variant="outlined" color="primary" onClick={closeWindow}>
+                Cancel
+              </Button>
+            </SButton>
+          </SIconButtons>
+        </form>
+      </Content>
+    </div>
+  )
+}
