@@ -1,8 +1,8 @@
 import config from 'config/SiteConfig';
 
-const { ApiDonationList } = require('./api-donor-donation');
-const { ApiCampaignList } = require('./api-customer-campaign');
-const { ApiSupplierRfpList } = require('./api-supplier-rfp');
+import ApiDonationList from './api-donor-donation';
+import ApiCampaignList from './api-customer-campaign';
+import ApiSupplierRfpList from './api-supplier-rfp';
 
 export default async function(siteState) {
   let data;

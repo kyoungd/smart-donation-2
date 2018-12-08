@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     "customer": "/org.acme.smartdonation.participant.Customer",
     "donor": "/org.acme.smartdonation.participant.Donor",
     "supplier": "/org.acme.smartdonation.participant.Supplier",

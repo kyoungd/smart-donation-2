@@ -1,6 +1,6 @@
+import { get, getResourceId } from './api';
+
 const _ = require('lodash');
-const { get, getResourceId } = require('./api');
-const config = require('./config');
 
 const getAllSupplier = async (customerId) => {
     const allSupplier = await get('supplier');
@@ -23,10 +23,10 @@ const ApiCampaignSupplier = async (campaignId) => {
         return {};
     const allRequests = await get('campaignrequest');
     const allRequest = allRequests.data.filter(request => 
-        getResourceId(request.campaign) == campaignId);
+        getResourceId(request.campaign) === campaignId);
     const allSuppliers = await get('supplier');
     const allSupplier = allSuppliers.data.filter(supplier => 
-        supplier.customer == campaign.data.customer);
+        supplier.customer === campaign.data.customer);
     
     if (!allSupplier || allSupplier.length <= 0)
         return {}
@@ -45,4 +45,4 @@ const ApiCampaignSupplier = async (campaignId) => {
     return reqs;
 }
 
-module.exports = { ApiCampaignSupplier };
+export default ApiCampaignSupplier;

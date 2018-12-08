@@ -1,5 +1,5 @@
+import { get, getResourceId } from './api';
 const _ = require('lodash');
-const { get, getResourceId } = require('./api');
 
 const ApiCampaignDonation = async () => {
   const allDonation = await get('donation');
@@ -22,4 +22,4 @@ const ApiCampaignDonation = async () => {
   return result;
 }
 
-module.exports = { ApiCampaignDonation }
+export default ApiCampaignDonation

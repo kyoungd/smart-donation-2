@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   "customer": "participantId",
   "donor": "participantId",
   "supplier": "participantId",

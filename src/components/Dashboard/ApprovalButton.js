@@ -12,7 +12,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import styled from 'styled-components';
 import StatusForDonor from './StatusForDonor';
 
-const { SetBlockchain } = require('../../models/api-post');
+import SetBlockchain from '../../models/api-post';
 
 const _ = require('lodash');
 
@@ -32,10 +32,6 @@ const ButtonIcon = styled.div`
   button {
     margin-left: 5%;
   }
-`;
-
-const ExtendedIcon = styled.div`
-  margin-right: 1em;
 `;
 
 export default function YesNoButton(productId, readOnly=false) {

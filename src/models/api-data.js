@@ -1,5 +1,5 @@
-const { getResourceId } = require('./api');
-const config = require('./config');
+import { getResourceId } from './api';
+import config from './config';
 
 const getDashboardDonorPost = (result) => {
     const { data } = result;
@@ -17,13 +17,4 @@ const getDashboardDonorPost = (result) => {
     return dashboard;
 }
 
-const getBackslag = (model, ix) => {
-    switch(model) {
-        case 'donor-donation':
-            return `${config.default.pageDonorDonation}?${getResourceId(data.donation)}`;
-        case 'donor-post':
-            return `${config.default.pageDonorDonation}?${getResourceId(data.donation)}`;
-    }
-}
-
-module.exports = { getDashboardDonorPost }
+export default getDashboardDonorPost;

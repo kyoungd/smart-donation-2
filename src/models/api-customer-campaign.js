@@ -1,7 +1,7 @@
-const _ = require('lodash');
-const { get, getResourceId } = require('./api');
-const config = require('./config');
+import { get, getResourceId } from './api';
+import config from './config';
 
+const _ = require('lodash');
 const ApiCampaignBlank = (customerId, id) => ({
   id,
   title: '',
@@ -75,4 +75,4 @@ const ApiCampaignList = async (customerId) => {
     return [ApiCampaignBlank(customerId, 'blank'), ...cr, ApiCampaignBlank(customerId, 'new')];
 }
 
-module.exports = { ApiCampaignList };
+export default ApiCampaignList;

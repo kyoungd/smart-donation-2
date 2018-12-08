@@ -11,10 +11,10 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 import { Subline } from 'components';
 import config from 'config/SiteConfig';
 import { EntityStateDdl } from '../../models/api-data-status';
+import SetBlockchain from '../../models/api-post';
 
 const _ = require('lodash');
 const uuidv1 = require('uuid/v1');
-const { SetBlockchain } = require('../../models/api-post');
 
 const RootPage = styled.div`
   padding-top: 0.5em;

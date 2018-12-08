@@ -1,6 +1,7 @@
+import { get, getResourceId } from './api';
+import config from './config';
+
 const _ = require('lodash');
-const { get, getResourceId } = require('./api');
-const config = require('./config');
 
 const ApiDonationBlank = (customerId, donorId, entityId) => ({
   id: entityId,
@@ -64,4 +65,4 @@ const ApiDonationList = async (customerId, donorId) => {
   return [ApiDonationBlank(customerId, donorId, 'blank'), ...cr, ApiDonationBlank(customerId, donorId, 'new')];
 }
 
-module.exports = { ApiDonationList };
+export default ApiDonationList;

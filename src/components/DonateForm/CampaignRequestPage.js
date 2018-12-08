@@ -13,12 +13,12 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 
 import { media } from '../../utils/media';
 import config from 'config/SiteConfig';
+import SetBlockchain from '../../models/api-post';
+import { ListSupplier } from '../../models/api-customer-campaignrequest';
+import { getResourceId } from '../../models/api';
 
 const uuidv1 = require('uuid/v1');
 const _ = require('lodash');
-const { SetBlockchain } = require('../../models/api-post');
-const { ListSupplier } = require('../../models/api-customer-campaignrequest');
-const { getResourceId } = require('../../models/api');
 
 const Content = styled.div`
   grid-column: 2;

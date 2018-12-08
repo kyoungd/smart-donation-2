@@ -13,9 +13,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 
 import config from 'config/SiteConfig';
-
-const { SetBlockchain } = require('../../models/api-post');
-const { get } = require('../../models/api');
+import SetBlockchain from '../../models/api-post';
+import { get } from '../../models/api';
 
 const _ = require('lodash');
 const Content = styled.div`

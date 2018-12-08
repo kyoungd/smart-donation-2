@@ -9,7 +9,7 @@ import Button from "@material-ui/core/Button";
 import TextField from '@material-ui/core/TextField';
 import config from 'config/SiteConfig';
 
-const { SetBlockchain } = require('../../models/api-post');
+import SetBlockchain from '../../models/api-post';
 
 const Content = styled.div`
   grid-column: 2;

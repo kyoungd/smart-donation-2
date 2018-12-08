@@ -1,8 +1,9 @@
+import { get, post, put, makeResourceId } from './api';
+import idName from './api-entityId';
+
 const moment = require('moment');
 const uuidv1 = require('uuid/v1');
 const _ = require('lodash');
-const { get, post, put, makeResourceId } = require('./api');
-const idName = require('./api-entityId');
 
 const baseEntity = {
   "bankaccount" : {
@@ -153,4 +154,4 @@ const SetBlockchain = async (model, data) => {
   return getBlock ? await PutBlockchain(model, data) : await PostBlockchain(model, data);
 }
 
-module.exports = { SetBlockchain }
+export default SetBlockchain;

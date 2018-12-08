@@ -16,8 +16,6 @@ const EntityStateList = (entities) => (status) =>
   entities.map(et => ({name: et.name, value: et.value, selected: et.value.toLowerCase() === status.toLowerCase() } ));
 
 
-const EntityStateDdl = status => EntityStateList(EntityState)(status);
+export const EntityStateDdl = status => EntityStateList(EntityState)(status);
 
-const ApprovalStateDonorDdl = status => EntityStateList(ApprovalStateDonor)(status);
- 
-module.exports = { EntityStateDdl, ApprovalStateDonorDdl }
+export const ApprovalStateDonorDdl = status => EntityStateList(ApprovalStateDonor)(status);

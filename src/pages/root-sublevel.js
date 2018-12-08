@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'gatsby';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { Layout, Wrapper, Subline } from 'components';
 import { media } from '../utils/media';

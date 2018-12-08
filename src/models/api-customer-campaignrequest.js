@@ -1,8 +1,9 @@
-const _ = require('lodash');
-const { get, getResourceId } = require('./api');
-const config = require('./config');
+import { get, getResourceId } from './api';
+import config from './config';
 
-const ListSupplier = (allRequest, allSupplier, request) => {
+const _ = require('lodash');
+
+export const ListSupplier = (allRequest, allSupplier, request) => {
   return allSupplier.data.map(supplier => {
     const selected = supplier.participantId === getResourceId(request.supplier);
     const checkResult = allRequest.reduce((total, req) => 
@@ -44,7 +45,7 @@ const EmptySublevelItem = (id, campaign) => ({
     approvalResponse: ' ',
   });
 
-const ApiCustomerCampaignRequest = async (campaignId) => {
+export const ApiCustomerCampaignRequest = async (campaignId) => {
     const campaign = await get('campaign', campaignId);
     if (!campaign || !campaign.data)
         return {};
@@ -56,7 +57,7 @@ const ApiCustomerCampaignRequest = async (campaignId) => {
     const reqs = allRequest.filter(r => getResourceId(r.campaign) === campaignId).map(request => {
         const supplier = allSupplier.data.find(s => s.participantId === getResourceId(request.supplier));
         const product = allProduct.data.filter(p =>
-            getResourceId(p.campaignRequest) == request.entityId);
+            getResourceId(p.campaignRequest) === request.entityId);
         const isProduct = product && product.length > 0;
         const editslug = '';
         const slug = `/root-campaignrequest?${campaignId}`;
@@ -93,5 +94,3 @@ const ApiCustomerCampaignRequest = async (campaignId) => {
       data: [EmptySublevelItem('blank', campaign), ...reqs, EmptySublevelItem('new', campaign) ] 
     }
 }
-
-module.exports = { ApiCustomerCampaignRequest, ListSupplier };

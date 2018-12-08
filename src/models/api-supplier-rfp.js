@@ -1,6 +1,7 @@
+import { get, getResourceId } from './api';
+import config from './config';
+
 const moment = require('moment');
-const { get, getResourceId } = require('./api');
-const config = require('./config');
 
 const ApiSupplierRfpList = async (supplierId) => {
   const supplier = await get('supplier', supplierId);
@@ -43,4 +44,4 @@ const ApiSupplierRfpList = async (supplierId) => {
   return reqs;
 }
 
-module.exports = { ApiSupplierRfpList };
+export default ApiSupplierRfpList;

@@ -1,6 +1,5 @@
-const _ = require('lodash');
-const { get, getResourceId } = require('./api');
-const config = require('./config');
+import { get, getResourceId } from './api';
+import config from './config';
 
 const ApiDonorPostList = async (donationId) => {
   const donation = await get('donation', donationId);
@@ -11,7 +10,7 @@ const ApiDonorPostList = async (donationId) => {
   const allProduct = await get('product');
   const reqs = allRequest.data.filter(r => getResourceId(r.donation) === donationId).map(request => {
     const product = allProduct.data.filter(p =>
-      getResourceId(p.campaignRequest) == request.entityId);
+      getResourceId(p.campaignRequest) === request.entityId);
     const isProduct = product && product.length > 0;
     const editslug = '';
     const slug = `/root-donation?${donationId}`;
@@ -43,4 +42,4 @@ const ApiDonorPostList = async (donationId) => {
   return { donationName, backslag: config.default.root, data: reqs };
 }
 
-module.exports = { ApiDonorPostList };
+export default ApiDonorPostList;
