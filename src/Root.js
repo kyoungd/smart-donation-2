@@ -4,7 +4,7 @@ import { createStore, applyMiddleware } from 'redux';
 import reduxThunk from 'redux-thunk';
 import reducers from 'reducers';
 
-export default ({ children, initialState = { show_loading: true } }) => {
+export default ({ children, initialState = {} }) => {
   const store = createStore(
     reducers,
     initialState,

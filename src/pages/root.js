@@ -4,14 +4,13 @@ import { Layout, Wrapper } from 'components';
 import { media } from '../utils/media';
 import CampaignCard from '../components/Dashboard/CampaignCard';
 import CampaignAddButton from '../components/Dashboard/CampaignAddButton';
-import ApiRoot from '../models/api-root.js';
-import ApiRootHelper from '../models/api-root-helper.js';
 import config from 'config/SiteConfig';
 import DonationPage from '../components/DonateForm/DonationPage';
 import CampaignPage from '../components/DonateForm/CampaignPage';
 import ProductPage from '../components/DonateForm/ProductPage';
 import SupplierRequestProductCard from '../components/Dashboard/SupplierRequestProductCard';
 import DashPostCardRoot from '../components/Dashboard/DashPostCardRoot';
+import ReduxRoot from 'hoc/ReduxRoot';
 
 const Content = styled.div`
   grid-column: 2;
@@ -40,26 +39,26 @@ const TitleArea = styled.div`
   overflow: hidden;
 `;
 
-export default class ListDonation extends Component {
+class ListDonation extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      dataOk: false,
+      dataRootOk: false,
+      dataRootHelperOk: false,
       pageState: config.pageState[config.siteState].rootList,
       pageEntityId: '',
     };
   }
 
+  dataCallback = dataItem => () => {
+    // do nothing for now
+    this.setState(dataItem);
+  }
+
   async componentDidMount() {
-    try {
-      console.log('root-componentDidMount: start');
-      const data = await ApiRoot(config.siteState);
-      const helper = await ApiRootHelper(config.siteState);
-      this.setState({data, helper, dataOk: true});
-    } catch (error) {
-      console.log(error);
-    }
+    this.props.getRoot(this.dataCallback({dataRootOk: true}));
+    this.props.getRootHelper(this.dataCallback({dataRootHelperOk: true}));
   }
 
   PageRootEdit = () => {
@@ -76,11 +75,17 @@ export default class ListDonation extends Component {
   }
 
   PageRootAdd = () => {
-      return config.siteState === config.siteStateDonor ? DonationPage :
-      ( config.siteState === config.siteStateCustomer ? CampaignPage : undefined);
+    switch (config.siteState) {
+      case config.siteStateDonor:
+        return DonationPage;
+      case config.siteStateCustomer:
+        return CampaignPage;
+      default:
+        return undefined;
+    }
   }
 
-  PageRoot = () => {
+  PageRootList = () => {
     switch (config.siteState) {
       case config.siteStateDonor:
         return CampaignCard;
@@ -89,7 +94,7 @@ export default class ListDonation extends Component {
       case config.siteStateSupplier:
         return SupplierRequestProductCard;
       default:
-        console.log('PageRoot exception: ', config.siteState, config.siteStateCustomer, CampaignCard);
+        console.log('PageRootList exception: ', config.siteState, config.siteStateCustomer, CampaignCard);
         return undefined;
     }
   }
@@ -99,7 +104,7 @@ export default class ListDonation extends Component {
       case config.pageState[config.siteState].rootAdd:
         return this.PageRootAdd().call(this, 'new');
       case config.pageState[config.siteState].rootList:
-        return data.map(item => item.id !== 'new' && item.id !== 'blank' ? this.PageRoot().call(this, item) : '');
+        return data.map(item => item.id !== 'new' && item.id !== 'blank' ? this.PageRootList().call(this, item) : '');
       case config.pageState[config.siteState].rootEdit:
         return data.map(item => pageEntityId === item.id ? this.PageRootEdit().call(this, item.id) : '');
       case config.pageState[config.siteState].post:
@@ -113,9 +118,10 @@ export default class ListDonation extends Component {
   }
 
   renderOk() {
-    const { data, pageState, pageEntityId } = this.state;
+    const { data } = this.props;
+    const { pageState, pageEntityId } = this.state;
 
-    console.log('--------------------------------------------------------------------root-render: ', this.state);
+    // console.log('--------------------------------------------------------------------root-render: ', this.state);
     return (
       <div>{ this.mainRenderer(pageState, data, pageEntityId) }</div>
     )
@@ -126,7 +132,8 @@ export default class ListDonation extends Component {
   }
 
   render() {
-    const { dataOk } = this.state;
+    const { dataRootOk, dataRootHelperOk } = this.state;
+
     return (
       <Layout>
         <Wrapper>
@@ -134,10 +141,12 @@ export default class ListDonation extends Component {
             { config.pageState[config.siteState].rootAdd !== '' && CampaignAddButton.call(this, 'root') }
           </TitleArea>
           <Content>
-            { dataOk ? this.renderOk() : this.renderLoading() }
+            { dataRootOk && dataRootHelperOk ? this.renderOk() : this.renderLoading() }
           </Content>
         </Wrapper>
       </Layout>
     );
   }
 }
+
+export default ReduxRoot(ListDonation);

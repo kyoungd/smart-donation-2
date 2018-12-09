@@ -17,5 +17,5 @@ export default function ReduxRoot(ChiidComponent) {
 }
   
 function mapStateToProps(state) {
-  return { data: state.data, showLoading: state.showLoading }
+  return state;
 }
