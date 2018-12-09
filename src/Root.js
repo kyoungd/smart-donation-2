@@ -1,15 +1,14 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
-import reduxPromise from 'redux-promise';
+import reduxThunk from 'redux-thunk';
 import reducers from 'reducers';
-import stateValidator from 'middlewares/stateValidator';
 
-export default ({ children, initialState = {} }) => {
+export default ({ children, initialState = { show_loading: true } }) => {
   const store = createStore(
     reducers,
     initialState,
-    applyMiddleware(reduxPromise, stateValidator)
+    applyMiddleware(reduxThunk)
   );
 
   return <Provider store={store}>{children}</Provider>;

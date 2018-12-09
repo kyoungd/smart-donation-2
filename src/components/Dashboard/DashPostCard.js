@@ -74,7 +74,7 @@ export default function DashPostCard(entityId, readOnly=false) {
             <IconButton 
               aria-label="closebutton"
               onClick={() => {
-                const backstate = (config.SiteState === config.siteStateSupplier ? "rootList" : "sublevelList");
+                const backstate = (config.siteState === config.siteStateSupplier ? "rootList" : "sublevelList");
                 this.setState({pageState: config.pageState[config.siteState][backstate], pageEntityId: ''});
               }}
             >

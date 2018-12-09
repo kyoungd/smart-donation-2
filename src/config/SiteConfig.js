@@ -84,5 +84,5 @@ export default {
 
   siteCustomerId: 'c-6ee91abf-d094-49e1-9385-d3cbd84b54a9',
   siteDonorId: 'd-6ee91abf-d094-49e1-9385-d3cbd84b54a9',
-  siteSupplierId: 's-6ee91abf-d094-49e1-9385-d3cbd84b54a909',
+  siteSupplierId: 's-6ee91abf-d094-49e1-9385-d3cbd84b54a904',
 };
