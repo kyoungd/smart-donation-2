@@ -5,11 +5,13 @@ import {
 import { getRoot, getRootHelper, setDataOk, setMessage } from './root';
 import { saveNewCampaign, saveExistingCampaign } from './campaign';
 import { saveNewDonation, saveExistingDonation } from './donation';
+import { saveExistingProduct } from './product';
 
 export { 
   getRoot, getRootHelper, setDataOk, setMessage,
   saveNewCampaign, saveExistingCampaign,
-  saveNewDonation, saveExistingDonation
+  saveNewDonation, saveExistingDonation,
+  saveExistingProduct
 }
 
 export function saveComment(comment) {

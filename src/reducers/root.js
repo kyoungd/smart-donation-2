@@ -1,7 +1,8 @@
 import { 
   DATA_OK, MESSAGE, GET_ROOT, GET_ROOT_HELPER, 
   NEW_CAMPAIGN, SAVE_CAMPAIGN,
-  NEW_DONATION, SAVE_DONATION
+  NEW_DONATION, SAVE_DONATION,
+  SAVE_PRODUCT,
 } from 'actions/types';
 
 export const rootDataReducer = (state = [], action) => {
@@ -12,6 +13,7 @@ export const rootDataReducer = (state = [], action) => {
       return [...state, action.payload];
     case SAVE_CAMPAIGN:
     case SAVE_DONATION:
+    case SAVE_PRODUCT:
       console.log('reducer SAVE_EXISTING');
       const dataSet = state.filter(item => item.id !== action.payload.id);
       return [...dataSet, action.payload];

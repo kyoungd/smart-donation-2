@@ -32,6 +32,7 @@ export const saveNewCampaign = (campaign, callback) => async dispatch => {
     const result = await SetBlockchain('campaign', formData);
     if (result.status === 200) {
       data.id = result.data.entityId;
+      data.entityId = result.data.entityId;
       console.log('CampaignPage.saveNew() campaign saved.  call dispatch. ');
       dispatch({type: NEW_CAMPAIGN, payload: data});
       callback();

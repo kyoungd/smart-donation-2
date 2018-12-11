@@ -31,6 +31,7 @@ export const saveNewDonation = (donation, callback) => async dispatch => {
     if (result.status === 200) {
       console.log('DonationPage.saveNew() donation saved 1 ');
       data.id = result.data.entityId;
+      data.entityId = result.data.entityId;
       dispatch({type: NEW_DONATION, payload: data});
       callback();
     }

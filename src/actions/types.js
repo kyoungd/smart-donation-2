@@ -10,3 +10,4 @@ export const NEW_CAMPAIGN = 'new_campaign';
 export const SAVE_CAMPAIGN = 'save_campaign';
 export const NEW_DONATION = 'new_donation';
 export const SAVE_DONATION = 'save_donation';
+export const SAVE_PRODUCT = 'save_product';
