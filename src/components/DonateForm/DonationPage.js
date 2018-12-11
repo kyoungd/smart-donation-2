@@ -1,15 +1,13 @@
 /* eslint jsx-a11y/label-has-for:0 */
 
-import React from 'react';
+import React, { Component } from 'react';
 import update from 'immutability-helper';
-import _ from 'lodash';
-import styled from 'styled-components';
-import { media } from '../../utils/media';
 import Button from "@material-ui/core/Button";
 import TextField from '@material-ui/core/TextField';
-import config from 'config/SiteConfig';
 
-import SetBlockchain from '../../models/api-post';
+import styled from 'styled-components';
+import { media } from '../../utils/media';
+import ReduxRoot from 'hoc/ReduxRoot';
 
 const Content = styled.div`
   grid-column: 2;
@@ -69,97 +67,52 @@ const SButton = styled.div `
   margin-left: 1.5em;
 `;
 
-export default function DonationPage(donationId) {
-  const { data } = this.state;
-  const donationIx = data.findIndex(item => item.id === donationId);
-  const donation = data[donationIx];
+class DonationPage extends Component {
 
-  const closeWindow = () => {
-    console.log('closeWindow called.', config.pageState[config.siteState].rootList);
+  constructor(props) {
+    super(props);
+
+    const { donationId, data } = this.props;
+    const donationIx = data.findIndex(item => item.id === donationId);
+    const donation = data[donationIx];
+  
+    this.state = {
+      dataOk : false,
+      donationIx,
+      donation,
+    };
+  }
+
+  closeWindow = () => {
+    this.props.onReturnToRootList();
+  }
+
+  // const changeHandler = type => event => {
+  //   this.setState({
+  //     data: update(this.state.data, { [donationIx]: { [type]: { $set: event.target.value } } })
+  //   });
+  // }
+  changeHandler = type => event => {
     this.setState({
-      pageState: config.pageState[config.siteState].rootList,
-      pageEntityId: ''
+      donation: update(this.state.donation, { [type]: { $set: event.target.value } })
     });
   }
 
-  const changeHandler = type => event => {
-    this.setState({
-      data: update(this.state.data, { [donationIx]: { [type]: { $set: event.target.value } } })
-    });
+  saveNew = (donation) => {
+    this.props.saveNewDonation(donation, this.closeWindow);
   }
 
-  const saveNew = () => {
-    const accountInfo = {
-      entityId: 'new',
-      accountNumber: donation.account,
-      routingNumber: donation.routing,
-    }
-    console.log('DonationPage.saveNew() bankaccount ');
-    SetBlockchain('bankaccount', accountInfo)
-      .then(result => {
-        console.log('DonationPage.saveNew() donation 1 ', result);
-        const bankaccount = result.data.entityId;
-        let formData = _.cloneDeep(donation);
-        formData.availableOn = donation.availableOn;
-        formData.expireOn = donation.expireOn;
-        formData.name = donation.title;
-        formData.rules = donation.rules.split('.');
-        formData.description = donation.description;
-        formData.entityId = donation.id;
-        formData.bankAccount = bankaccount;
-        formData.customer = donation.customer;
-        formData.donor = donation.donor;
-        formData.rules = donation.rules.split('.');
-        console.log('DonationPage.saveNew() donation 2 ', JSON.stringify(formData, null, 2));
-        return SetBlockchain('donation', formData);
-      })
-      .then(result => {
-        console.log('DonationPage.saveNew() donation saved 1 ');
-        this.setState({
-          data: update(this.state.data, { [donationIx]: { id: { $set: result.data.entityId } } })
-        }, () => {
-          console.log('DonationPage.saveNew() donation saved 2 ');
-          let newblock = this.state.data.filter(item => item.id === 'blank');
-          newblock.id = 'new';
-          this.setState({ data: [...this.state.data, newblock] });
-        })
-      })
-      .catch(err => {
-        console.log('DonationPage.saveNew() error ', err);
-      })
-    closeWindow();
+  saveEdit = (donation) => {
+    this.props.saveExistingDonation(donation, this.closeWindow);
   }
 
-  const saveEdit = () => {
-    let formData = _.cloneDeep(donation);
-    formData.availableOn = donation.availableOn;
-    formData.expireOn = donation.expireOn;
-    formData.name = donation.title;
-    formData.entityId = donation.id;
-    formData.rules = donation.rules.split('.');
-    formData.description = donation.description;
-    console.log('saveEdit: 1');
-    SetBlockchain('donation', formData)
-      .then(result => {
-        console.log('saveEdit: 2');
-        if (result.status === 200) {
-          console.log('saveEdit: 3');
-          console.log(result.statusText);
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
-    closeWindow();
-  }
-
-  const submitHandler = event => {
+  submitHandler = event => {
     event.preventDefault();
-    console.log('Donation submitHandler --------', donation);
-    donation.id === 'new' ? saveNew() : saveEdit();
+    console.log('Donation submitHandler --------', this.state.donation);
+    this.state.donation.id === 'new' ? this.saveNew(this.state.donation) : this.saveEdit(this.state.donation);
   }
 
-  const showAccount = () => {
+  showAccount = () => {
     return (
       <DateDiv>
         <div>
@@ -168,8 +121,8 @@ export default function DonationPage(donationId) {
             id="account"
             label="account number"
             type="text"
-            value={donation.account}
-            onChange={changeHandler('account')}
+            value={this.state.donation.account}
+            onChange={this.changeHandler('account')}
           />
         </div>
         <div>
@@ -178,106 +131,110 @@ export default function DonationPage(donationId) {
             id="routing"
             label="routing number"
             type="text"
-            value={donation.routing}
-            onChange={changeHandler('routing')}
+            value={this.state.donation.routing}
+            onChange={this.changeHandler('routing')}
           />
         </div>
       </DateDiv>
     )
   }
 
-  return (
-    <Content>
-      <p>Make Donation</p>
-      <form name="contact-form" method="post" onSubmit={submitHandler}>
-        <div>
+  render () {
+    return (
+      <Content>
+        <p>Make Donation</p>
+        <form name="contact-form" method="post" onSubmit={this.submitHandler}>
           <div>
-            <TextField
-              variant="outlined"
-              id="name"
-              label="name"
-              value={donation.title}
-              margin="normal"
-              onChange={changeHandler('title')}
-            />
-          </div>
-          <div>
-            <TextField
-              variant="outlined"
-              id="amount"
-              label="amount"
-              value={donation.amount}
-              margin="normal"
-              onChange={changeHandler('amount')}
-            />
-          </div>
-          <DateDiv>
             <div>
               <TextField
                 variant="outlined"
-                id="availableOn"
-                label="availableOn"
-                type="date"
-                value={donation.availableOn}
-                onChange={changeHandler('availableOn')}
-                InputLabelProps={{
-                  shrink: true,
-                }}
+                id="name"
+                label="name"
+                value={this.state.donation.title}
+                margin="normal"
+                onChange={this.changeHandler('title')}
               />
             </div>
             <div>
               <TextField
                 variant="outlined"
-                id="expireOn"
-                label="expireOn"
-                type="date"
-                value={donation.expireOn}
-                onChange={changeHandler('expireOn')}
-                InputLabelProps={{
-                  shrink: true,
-                }}
+                id="amount"
+                label="amount"
+                value={this.state.donation.amount}
+                margin="normal"
+                onChange={this.changeHandler('amount')}
               />
             </div>
-          </DateDiv>
-          {donation.id === 'new' && showAccount()}
-          <div>
-            <TextField
-              variant="outlined"
-              id="rules"
-              label="Rules"
-              multiline
-              rowsMax="3"
-              value={donation.rules}
-              onChange={changeHandler('rules')}
-              margin="normal"
-            />
+            <DateDiv>
+              <div>
+                <TextField
+                  variant="outlined"
+                  id="availableOn"
+                  label="availableOn"
+                  type="date"
+                  value={this.state.donation.availableOn}
+                  onChange={this.changeHandler('availableOn')}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </div>
+              <div>
+                <TextField
+                  variant="outlined"
+                  id="expireOn"
+                  label="expireOn"
+                  type="date"
+                  value={this.state.donation.expireOn}
+                  onChange={this.changeHandler('expireOn')}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </div>
+            </DateDiv>
+            {this.state.donation.id === 'new' && this.showAccount()}
+            <div>
+              <TextField
+                variant="outlined"
+                id="rules"
+                label="Rules"
+                multiline
+                rowsMax="3"
+                value={this.state.donation.rules}
+                onChange={this.changeHandler('rules')}
+                margin="normal"
+              />
+            </div>
+            <div>
+              <TextField
+                variant="outlined"
+                id="description"
+                label="description"
+                multiline
+                rowsMax="3"
+                value={this.state.donation.description}
+                onChange={this.changeHandler('description')}
+                margin="normal"
+              />
+            </div>
+            <SIconButtons>
+              <SButton>
+                <Button variant="outlined" color="primary" type="submit">
+                  Submit
+                </Button>
+              </SButton>
+              <SButton>
+                <Button variant="outlined" color="primary" onClick={this.closeWindow}>
+                  Cancel
+                </Button>
+              </SButton>
+            </SIconButtons>
           </div>
-          <div>
-            <TextField
-              variant="outlined"
-              id="description"
-              label="description"
-              multiline
-              rowsMax="3"
-              value={donation.description}
-              onChange={changeHandler('description')}
-              margin="normal"
-            />
-          </div>
-          <SIconButtons>
-            <SButton>
-              <Button variant="outlined" color="primary" type="submit">
-                Submit
-              </Button>
-            </SButton>
-            <SButton>
-              <Button variant="outlined" color="primary" onClick={closeWindow}>
-                Cancel
-              </Button>
-            </SButton>
-          </SIconButtons>
-        </div>
-      </form>
-    </Content>
-  )
+        </form>
+      </Content>
+    )
+  }
 }
+
+export default ReduxRoot(DonationPage)

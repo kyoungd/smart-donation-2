@@ -41,6 +41,13 @@ const TitleArea = styled.div`
 
 class ListDonation extends Component {
 
+  onReturnToRootList = () => {
+    this.setState({
+      pageState: config.pageState[config.siteState].rootList,
+      pageEntityId: '',
+    })
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -51,6 +58,11 @@ class ListDonation extends Component {
     };
   }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    console.log('getDerivedStateFromProps', nextProps);
+    return null;
+  }
+
   dataCallback = dataItem => () => {
     // do nothing for now
     this.setState(dataItem);
@@ -59,16 +71,17 @@ class ListDonation extends Component {
   async componentDidMount() {
     this.props.getRoot(this.dataCallback({dataRootOk: true}));
     this.props.getRootHelper(this.dataCallback({dataRootHelperOk: true}));
+    console.log('componentDidMout -----------------------');
   }
 
-  PageRootEdit = () => {
+  PageRootEdit = (entityId) => {
     switch (config.siteState) {
       case config.siteStateDonor:
-        return DonationPage;
+        return <DonationPage donationId={entityId} onReturnToRootList={this.onReturnToRootList} />;
       case config.siteStateCustomer:
-        return CampaignPage;
+        return <CampaignPage campaignId={entityId} onReturnToRootList={this.onReturnToRootList} />;
       case config.siteStateSupplier:
-        return ProductPage;
+        return <ProductPage productId={entityId} onReturnToRootList={this.onReturnToRootList} />;
       default:
         return undefined;
     }
@@ -77,9 +90,9 @@ class ListDonation extends Component {
   PageRootAdd = () => {
     switch (config.siteState) {
       case config.siteStateDonor:
-        return DonationPage;
+        return <DonationPage donationId='new' onReturnToRootList={this.onReturnToRootList} />;
       case config.siteStateCustomer:
-        return CampaignPage;
+        return <CampaignPage campaignId='new' onReturnToRootList={this.onReturnToRootList} />;
       default:
         return undefined;
     }
@@ -102,11 +115,11 @@ class ListDonation extends Component {
   mainRenderer = (pageState, data, pageEntityId) => {
     switch (pageState) {
       case config.pageState[config.siteState].rootAdd:
-        return this.PageRootAdd().call(this, 'new');
+        return this.PageRootAdd();
       case config.pageState[config.siteState].rootList:
         return data.map(item => item.id !== 'new' && item.id !== 'blank' ? this.PageRootList().call(this, item) : '');
       case config.pageState[config.siteState].rootEdit:
-        return data.map(item => pageEntityId === item.id ? this.PageRootEdit().call(this, item.id) : '');
+        return data.map(item => pageEntityId === item.id ? this.PageRootEdit(item.id) : '');
       case config.pageState[config.siteState].post:
         const oneData = data.find(item => pageEntityId === item.id);
         console.log('calling root-post', oneData);
@@ -121,7 +134,7 @@ class ListDonation extends Component {
     const { data } = this.props;
     const { pageState, pageEntityId } = this.state;
 
-    // console.log('--------------------------------------------------------------------root-render: ', this.state);
+    console.log('--------------------------------------------------------------------root-render: ', data);
     return (
       <div>{ this.mainRenderer(pageState, data, pageEntityId) }</div>
     )

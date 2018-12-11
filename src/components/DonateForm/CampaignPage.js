@@ -1,22 +1,19 @@
 /* eslint jsx-a11y/label-has-for:0 */
-
-import React from 'react';
-import update from 'immutability-helper';
+import React, {Component} from 'react';
 import styled from 'styled-components';
-import { media } from '../../utils/media';
+import update from 'immutability-helper';
 import Button from "@material-ui/core/Button";
 import TextField from '@material-ui/core/TextField';
+import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 
+import { media } from '../../utils/media';
+import ReduxRoot from 'hoc/ReduxRoot';
 import config from 'config/SiteConfig';
-import SetBlockchain from '../../models/api-post';
-import { get } from '../../models/api';
 
-const _ = require('lodash');
 const Content = styled.div`
   grid-column: 2;
   box-shadow: 0 4px 120px rgba(0, 0, 0, 0.1);
@@ -83,103 +80,53 @@ const SButton = styled.div `
   margin-left: 1.5em;
 `;
 
-export default function (campaignId) {
-  const { data, helper } = this.state;
-  const campaignIx = data.findIndex(item => item.id === campaignId);
-  const campaign = data[campaignIx];
 
-  const changeHandler = type => event => {
+class CampaignPage extends Component {
+
+  constructor(props) {
+    super(props);
+    const { campaignId, data} = this.props;
+
+    const campaignIx = data.findIndex(item => item.id === campaignId);
+    const campaign = data[campaignIx];
+    this.state = {
+      dataOk : false,
+      campaignIx,
+      campaign,
+      helper: this.props.helper,
+    };
+  }
+
+  changeHandler = type => event => {
+    // this.setState({
+    //   campaign: {
+    //     [type] : event.target.value
+    //   }
+    // });
     this.setState({
-      data: update(this.state.data, { [campaignIx]: { [type]: { $set: event.target.value } } })
+      campaign: update(this.state.campaign, { [type]: { $set: event.target.value } })
     });
   }
 
-  const closeWindow = () => {
-    console.log('closeWindow called.', config.pageState[config.siteState].rootList);
-    this.setState({
-      pageState: config.pageState[config.siteState].rootList,
-      pageEntityId: ''
-    });
+  closeWindow = () => {
+    this.props.onReturnToRootList();
   }
 
-  const saveNew = () => {
-    let bankaccount;
-    const accountInfo = {
-      entityId: 'new',
-      accountNumber: campaign.account,
-      routingNumber: campaign.routing,
-    }
-    console.log('CampaignPage.saveNew() bankaccount ');
-    SetBlockchain('bankaccount', accountInfo)
-      .then(result => {
-        console.log('CampaignPage.saveNew() campaign 1 ', result);
-        bankaccount = result.data.entityId;
-        return get('donation', campaign.donation);
-      })
-      .then(result => {
-        console.log('CampaignPage.saveNew() campaign 2 ', result);
-        let formData = _.cloneDeep(campaign);
-        formData.availableOn = campaign.availableOn;
-        formData.expireOn = campaign.expireOn;
-        formData.name = campaign.title;
-        formData.description = campaign.description;
-        formData.entityId = campaign.id;
-        formData.bankAccount = bankaccount;
-        formData.customer = campaign.customer;
-        formData.donor = result.data.donor;
-        formData.donation = campaign.donation;
-        console.log('CampaignPage.saveNew() campaign 3 ', JSON.stringify(formData, null, 2));
-        return SetBlockchain('campaign', formData);
-      })
-      .then(result => {
-        console.log('CampaignPage.saveNew() campaign saved 1 ');
-        const clickslug = campaign.clickslug.replace('campaignId', result.data.entityId);
-        this.setState({
-          data: update(this.state.data, {
-            [campaignIx]: { id: { $set: result.data.entityId }, clickslug: { $set: clickslug } },
-          })
-        }, () => {
-          console.log('CampaignPage.saveNew() campaign saved 2 ');
-          let newblock = this.state.data.filter(item => item.id === 'blank');
-          newblock.id = 'new';
-          this.setState({ data: [...this.state.data, newblock] });
-        })
-      })
-      .catch(err => {
-        console.log('CampaignPage.saveNew() error ', err);
-      })
-    closeWindow();
+  saveNew = () => {
+    this.props.saveNewCampaign(this.state.campaign, this.closeWindow);
   }
 
-  const saveEdit = () => {
-    let formData = _.cloneDeep(campaign);
-    formData.availableOn = campaign.availableOn;
-    formData.expireOn = campaign.expireOn;
-    formData.name = campaign.title;
-    formData.entityId = campaign.id;
-    formData.description = campaign.description;
-    console.log('saveEdit: 1');
-    SetBlockchain('campaign', formData)
-      .then(result => {
-        console.log('saveEdit: 2');
-        if (result.status === 200) {
-          console.log('saveEdit: 3');
-          console.log(result.statusText);
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
-    closeWindow();
+  saveEdit = () => {
+    this.props.saveExistingCampaign(this.state.campaign, this.closeWindow);
   }
 
-  const submitHandler = event => {
+  submitHandler = event => {
     event.preventDefault();
-    console.log('Donation submitHandler --------', campaign);
-    campaign.id === 'new' ? saveNew() : saveEdit();
+    console.log('Donation submitHandler --------', this.state.campaign);
+    this.state.campaign.id === 'new' ? this.saveNew() : this.saveEdit();
   }
 
-  const showAccount = () => {
+  showAccount = () => {
     return (
       <DateDiv>
         <div>
@@ -188,8 +135,8 @@ export default function (campaignId) {
           id="account"
           label="account number"
           type="text"
-          value={campaign.account}
-          onChange={changeHandler('account')}
+          value={this.state.campaign.account}
+          onChange={this.changeHandler('account')}
         />
         </div>
         <div>
@@ -198,141 +145,141 @@ export default function (campaignId) {
           id="routing"
           label="routing number"
           type="text"
-          value={campaign.routing}
-          onChange={changeHandler('routing')}
+          value={this.state.campaign.routing}
+          onChange={this.changeHandler('routing')}
         />
         </div>
       </DateDiv>
     )
   }
 
-  return (
-    <div>
-      <Content>
-        <p>Make Campaign</p>
-        <form name="contact-form" method="post" onSubmit={submitHandler}>
-          <div>
+  render() {
+    return (
+      <div>
+        <Content>
+          <p>Make Campaign</p>
+          <form name="contact-form" method="post" onSubmit={this.submitHandler}>
             <div>
-              <TextField
-                variant="outlined"
-                id="name"
-                label="name"
-                value={campaign.title}
-                margin="normal"
-                onChange={changeHandler('title')}
-              />
-            </div>
-            <div>
-              <TextField
-                variant="outlined"
-                id="amount"
-                label="amount"
-                value={campaign.amount}
-                margin="normal"
-                onChange={changeHandler('amount')}
-              />
-            </div>
-            <DateDiv>
               <div>
                 <TextField
                   variant="outlined"
-                  id="availableOn"
-                  label="availableOn"
-                  type="date"
-                  defaultValue={campaign.availableOn}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={changeHandler('availableOn')}
+                  id="name"
+                  label="name"
+                  value={this.state.campaign.title}
+                  margin="normal"
+                  onChange={this.changeHandler('title')}
                 />
               </div>
               <div>
                 <TextField
                   variant="outlined"
-                  id="expireOn"
-                  label="expireOn"
-                  type="date"
-                  defaultValue={campaign.expireOn}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={changeHandler('expireOn')}
+                  id="amount"
+                  label="amount"
+                  value={this.state.campaign.amount}
+                  margin="normal"
+                  onChange={this.changeHandler('amount')}
                 />
               </div>
-            </DateDiv>
-            {campaign.id === 'new' && showAccount()}
-            <TextField
-              variant="outlined"
-              id="description"
-              label="description"
-              multiline
-              rowsMax="3"
-              value={campaign.description}
-              margin="normal"
-              onChange={changeHandler('description')}
-              />
-          </div>
-          <SelectDiv>
-              <FormControl variant="outlined">
-                <InputLabel
-                  ref={ref => {
-                    this.InputLabelRef = ref;
-                  }}
-                  htmlFor="outlined-age-simple"
-                >
-                  Choose Donation
-                </InputLabel>
-                <Select
-                  value={campaign.donation}
-                  onChange={changeHandler('donation')}
-                  input={<OutlinedInput labelWidth={100} name="donation" id="outlined-donation-simple" />}
-                >
-                  {helper.map(s => <MenuItem value={s.id}><em>{s.name}</em></MenuItem>)}
-                </Select>
-              </FormControl>
-            </SelectDiv>
+              <DateDiv>
+                <div>
+                  <TextField
+                    variant="outlined"
+                    id="availableOn"
+                    label="availableOn"
+                    type="date"
+                    defaultValue={this.state.campaign.availableOn}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={this.changeHandler('availableOn')}
+                  />
+                </div>
+                <div>
+                  <TextField
+                    variant="outlined"
+                    id="expireOn"
+                    label="expireOn"
+                    type="date"
+                    defaultValue={this.state.campaign.expireOn}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={this.changeHandler('expireOn')}
+                  />
+                </div>
+              </DateDiv>
+              {this.state.campaign.id === 'new' && this.showAccount()}
+              <TextField
+                variant="outlined"
+                id="description"
+                label="description"
+                multiline
+                rowsMax="3"
+                value={this.state.campaign.description}
+                margin="normal"
+                onChange={this.changeHandler('description')}
+                />
+            </div>
             <SelectDiv>
-              <FormControl variant="outlined">
-                <InputLabel
-                  ref={ref => {
-                    this.InputLabelRef = ref;
-                  }}
-                  htmlFor="outlined-age-simple"
+                <FormControl variant="outlined">
+                  <InputLabel
+                    ref={ref => {
+                      this.InputLabelRef = ref;
+                    }}
+                    htmlFor="outlined-age-simple"
+                  >
+                    Choose Donation
+                  </InputLabel>
+                  <Select
+                    value={this.state.campaign.donation}
+                    onChange={this.changeHandler('donation')}
+                    input={<OutlinedInput labelWidth={100} name="donation" id="outlined-donation-simple" />}
+                  >
+                    {this.state.helper.map(s => <MenuItem value={s.id}><em>{s.name}</em></MenuItem>)}
+                  </Select>
+                </FormControl>
+              </SelectDiv>
+              <SelectDiv>
+                <FormControl variant="outlined">
+                  <InputLabel
+                    ref={ref => {
+                      this.InputLabelRef = ref;
+                    }}
+                    htmlFor="outlined-age-simple"
+                  >
+                    Choose Status
+                  </InputLabel>
+                  <Select
+                    value={this.state.campaign.status}
+                    onChange={this.changeHandler('status')}
+                    input={<OutlinedInput labelWidth={100} name="status" id="outlined-status-simple" />}
+                  >
+                    {config.siteStatus.map(s => <MenuItem value={s}><em>{s}</em></MenuItem>)}
+                  </Select>
+                </FormControl>
+            </SelectDiv>
+            <SIconButtons>
+              <SButton>
+                <Button variant="outlined" color="primary" type="submit">
+                  Submit
+                </Button>
+              </SButton>
+              <SButton>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={this.closeWindow}
                 >
-                  Choose Status
-                </InputLabel>
-                <Select
-                  value={campaign.status}
-                  onChange={changeHandler('status')}
-                  input={<OutlinedInput labelWidth={100} name="status" id="outlined-status-simple" />}
-                >
-                  {config.siteStatus.map(s => <MenuItem value={s}><em>{s}</em></MenuItem>)}
-                </Select>
-              </FormControl>
-          </SelectDiv>
-          <SIconButtons>
-            <SButton>
-              <Button variant="outlined" color="primary" type="submit">
-                Submit
-              </Button>
-            </SButton>
-            <SButton>
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => {
-                  this.setState({
-                    pageState: config.pageState[config.siteState].rootList,
-                    pageEntityId: ''
-                  });
-                }}
-              >
-                Cancel
-              </Button>
-            </SButton>
-          </SIconButtons>
-        </form>
-      </Content>
-    </div>
-  )
+                  Cancel
+                </Button>
+              </SButton>
+            </SIconButtons>
+          </form>
+        </Content>
+      </div>
+    )
+  }
+
 }
+
+export default ReduxRoot(CampaignPage)
