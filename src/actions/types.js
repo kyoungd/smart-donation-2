@@ -11,3 +11,6 @@ export const SAVE_CAMPAIGN = 'save_campaign';
 export const NEW_DONATION = 'new_donation';
 export const SAVE_DONATION = 'save_donation';
 export const SAVE_PRODUCT = 'save_product';
+
+export const GET_SUBLEVEL = 'get_sublevel';
+export const SAVE_APPROVAL = 'save_approval';

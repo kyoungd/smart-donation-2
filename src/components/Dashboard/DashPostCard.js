@@ -7,7 +7,6 @@ import IconButton from '@material-ui/core/IconButton';
 import styled from 'styled-components';
 import { Subline } from 'components';
 import ApprovalButton from './ApprovalButton';
-import config from 'config/SiteConfig';
 
 const uuidv1 = require('uuid/v1');
 
@@ -55,15 +54,10 @@ const PostContent = styled.div`
   display:block;
 `;
 
-export default function DashPostCard(entityId, readOnly=false) {
-  const { rejectOpen } = this.state;
-  if (rejectOpen) return <div>{ApprovalButton.call(this, entityId, readOnly)} </div>;
+export default function DashPostCard ({product, onReturnToSublevelList, readOnly=false}) {
 
-  const { dashboard: { data } } = this.state;
-  const productIx = data.findIndex(item => item.id === entityId);
-  const { dashboard: { data: { [productIx] : post } } } = this.state;
-  console.log('DashPostCard  ---', post);
-  const createdOn = post.createdOn ? post.createdOn : (post.productCreatedOn ? post.productCreatedOn : '');
+  console.log('DashPostCard  ---', product);
+  const createdOn = product.createdOn ? product.createdOn : (product.productCreatedOn ? product.productCreatedOn : '');
   const subline = `CREATED ON: ${createdOn.length > 10 ? createdOn.slice(0,10) : createdOn}`;
   return (
     <RootPage key={uuidv1()}>
@@ -73,27 +67,24 @@ export default function DashPostCard(entityId, readOnly=false) {
             <div>{subline}</div>
             <IconButton 
               aria-label="closebutton"
-              onClick={() => {
-                const backstate = (config.siteState === config.siteStateSupplier ? "rootList" : "sublevelList");
-                this.setState({pageState: config.pageState[config.siteState][backstate], pageEntityId: ''});
-              }}
+              onClick={onReturnToSublevelList}
             >
               <CloseIcon fontSize="large" />
             </IconButton>
           </CloseIconDiv>
         </Subline>
-        <NameDiv>{ post.name }</NameDiv>
+        <NameDiv>{ product.name }</NameDiv>
         <CardContent>
-          <PostVideo dangerouslySetInnerHTML={{ __html: post.video }} />
+          <PostVideo dangerouslySetInnerHTML={{ __html: product.video }} />
           <PostContent>
             <CardContent>
               <Typography gutterBottom variant="h5" component="h2">
                 Product
               </Typography>
-              <PostContent dangerouslySetInnerHTML={{ __html: post.html }} />
+              <PostContent dangerouslySetInnerHTML={{ __html: product.html }} />
             </CardContent>
           </PostContent>
-          { ApprovalButton.call(this, entityId, readOnly) }
+          < ApprovalButton product={product} onReturnToSublevelList={onReturnToSublevelList} readOnly={readOnly} />
         </CardContent>
       </Card>
     </RootPage>

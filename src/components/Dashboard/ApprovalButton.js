@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Component } from 'react'
 import update from 'immutability-helper';
 import Button from '@material-ui/core/Button';
 import ThumbUpIcon from '@material-ui/icons/ThumbUp';
@@ -10,9 +10,9 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import styled from 'styled-components';
-import StatusForDonor from './StatusForDonor';
 
-import SetBlockchain from '../../models/api-post';
+import StatusForDonor from './StatusForDonor';
+import ReduxRoot from 'hoc/ReduxRoot';
 
 const _ = require('lodash');
 
@@ -34,76 +34,67 @@ const ButtonIcon = styled.div`
   }
 `;
 
-export default function YesNoButton(productId, readOnly=false) {
-  const { data } = this.state.dashboard;
-  const productIx = data.findIndex(item => item.id === productId);
-  const product = data[productIx];
-  const rejectOpen = this.state.rejectOpen === undefined ? false : this.state.rejectOpen;
-  // console.log('ApprovalButton - YesNoButton ', product);
-  
-  const UpdateApproval = () => {
-    const { dashboard: { data: { [productIx]: post }}} = this.state;
-    const formData = {
-      entityId: post.product,
-      approvalStatus: post.status,
-      approvalResponse: post.approvalResponse,
-    }
-    console.log('UpdateApproval', formData);
-    SetBlockchain('product', formData)
-      .then(result => {
-        if (result.status === 200) {
-          console.log(result.statusText);
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
+class YesNoButton extends Component {
+
+  constructor(props) {
+    super(props);
+    const { product, readOnly } = this.props;
+    this.state = {
+      readOnly,
+      product,
+      rejectOpen: false,
+    };
   }
 
-  const changeHandler = type => event => {
+  callback = () => {
+    console.log('---------------  YesNoButton callback exec.');
+    this.props.onReturnToSublevelList();
+  }
+
+  UpdateApproval = () => {
+    console.log('---------------  UpdateApproval callback exec.');
+    const { product } = this.state;
+    this.props.saveApproval(product, this.callback);
+  }
+
+  changeHandler = type => event => {
     this.setState({
-        dashboard: update(this.state.dashboard, 
-        {
-          data:
-            { [productIx]: { status: { $set: type } } }
-        })
-      },
-        UpdateApproval
-      );
-  }
-
-  const handleRejectOpen = () => {
-    this.setState({'rejectOpen': true} );
-  }
-
-  const handleRejectClose = () => {
-    console.log('handleRejectClose ');
-    this.setState({
-      'rejectOpen': false,
-      dashboard: update(this.state.dashboard, 
-      {
-        data:
-          { [productIx]: { status: { $set: 'REJECTED' } } }
-      })
+      product: update(this.state.product, { status: { $set: type } })
     },
-      UpdateApproval
+      this.UpdateApproval
     );
   }
 
-  const handleClose = () => {
+  handleRejectOpen = () => {
+    this.setState({'rejectOpen': true} );
+  }
+
+  handleRejectClose = () => {
+    console.log('handleRejectClose ');
+    this.setState({
+      'rejectOpen': false,
+      product: update(this.state.product, 
+          { status: { $set: 'REJECTED' } }
+      )
+    },
+      this.UpdateApproval
+    );
+  }
+
+  handleClose = () => {
     this.setState({'rejectOpen': false} );
   }
 
-  const buttonVariant = (status) => (product.status.toLowerCase() === status ? 'outlined' : 'text');
-  const buttonLetter = letter => _.includes(['accepted', 'rejected'], product.status.toLowerCase()) ? letter + 'ED' : letter;
+  buttonVariant = (status) => (this.state.product.status.toLowerCase() === status ? 'outlined' : 'text');
+  buttonLetter = letter => _.includes(['accepted', 'rejected'], this.state.product.status.toLowerCase()) ? letter + 'ED' : letter;
 
-  const readOnlyButtons = () => (
-    <StatusForDonor status={product.status} statusType="approval" />
+  readOnlyButtons = () => (
+    <StatusForDonor status={this.product.status} statusType="approval" />
   )
 
-  const writeButtons = () => (
+  writeButtons = () => (
     <RootPage>
-      <Dialog open={rejectOpen} onClose={handleClose} aria-labelledby="form-dialog-title">
+      <Dialog open={this.state.rejectOpen} onClose={this.handleClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Reason for rejection</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -111,8 +102,8 @@ export default function YesNoButton(productId, readOnly=false) {
             works more in line with your vision.
           </DialogContentText>
           <TextField 
-            value={product.approvalResponse}
-            onChange={textHandler('approvalResponse')}
+            value={this.state.product.approvalResponse}
+            onChange={this.textHandler('approvalResponse')}
             autoFocus margin="dense"
             id="reason"
             label="Reason"
@@ -121,52 +112,54 @@ export default function YesNoButton(productId, readOnly=false) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={this.handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleRejectClose} color="primary">
+          <Button onClick={this.handleRejectClose} color="primary">
             Submit
           </Button>
         </DialogActions>
       </Dialog>
       <ButtonIcon>
         <Button 
-          variant={buttonVariant('accepted')}
+          variant={this.buttonVariant('accepted')}
           aria-label="Accept"
           color="default"
           disableRipple
-          onClick={changeHandler('ACCEPTED')}
+          onClick={this.changeHandler('ACCEPTED')}
         >
           <ThumbUpIcon />
-          &nbsp;&nbsp;{buttonLetter('ACCEPT')}
+          &nbsp;&nbsp;{this.buttonLetter('ACCEPT')}
         </Button>
         <Button
-          variant={buttonVariant('rejected')}
+          variant={this.buttonVariant('rejected')}
           aria-label="Accept"
           color="default"
           disableRipple
-          onClick={handleRejectOpen}
+          onClick={this.handleRejectOpen}
         >
           <ThumbDownIcon />
-          &nbsp;&nbsp;{buttonLetter('REJECT')}
+          &nbsp;&nbsp;{this.buttonLetter('REJECT')}
         </Button>
       </ButtonIcon>
     </RootPage>
   )
 
-  const textHandler = type => event => {
+  textHandler = type => event => {
     this.setState({
-      dashboard: update(this.state.dashboard, { 
-        data:
-          {[productIx] : {[type]: {$set: event.target.value}}}
-      })
+      product: update(this.state.product, {approvalResponse: {$set: event.target.value}} )
     })
   }
 
-  return (
-    <div>
-      { readOnly === true ? readOnlyButtons() : writeButtons() }
-    </div>
-  );
+  render() {
+    console.log('ApprovalButton - render()', this.state);
+    return (
+      <div>
+        { this.state.readOnly === true ? this.readOnlyButtons() : this.writeButtons() }
+      </div>
+    );
+  }
 
 }
+
+export default ReduxRoot(YesNoButton);

@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+
 import { Layout, Wrapper, Subline } from 'components';
 import { media } from '../utils/media';
 import config from 'config/SiteConfig';
 import DashApprovalCard from '../components/Dashboard/DashApprovalCard';
 import DashPostCard from '../components/Dashboard/DashPostCard';
-import ApiSublevel from '../models/api-sublevel';
 import CampaignAddButton from '../components/Dashboard/CampaignAddButton';
 import CampaignRequestPage from '../components/DonateForm/CampaignRequestPage';
+import ReduxRoot from 'hoc/ReduxRoot';
 
 const Content = styled.div`
   grid-column: 2;
@@ -39,7 +40,7 @@ const TitleArea = styled.div`
   overflow: hidden;
 `;
 
-export default class ListApprovals extends Component {
+class ListApprovals extends Component {
 
   constructor(props) {
     super(props);
@@ -52,11 +53,22 @@ export default class ListApprovals extends Component {
     };
   }
 
+  onReturnToSublevelList = () => {
+    this.setState({
+      pageState: config.pageState[config.siteState].sublevelList,
+      pageEntityId: '',
+    })
+  }
+
+  dataCallback = dataItem => () => {
+    // do nothing for now
+    this.setState(dataItem);
+  }
+
   async componentDidMount() {
     try {
       const { donationId } = this.state;
-      const dashboard = await ApiSublevel(config.siteState, donationId);
-      this.setState({ dashboard, dataOk: true });
+      this.props.getSublevel(donationId, this.dataCallback({dataOk: true}));
       // console.log('root-componentDidMount: start', dashboard);
     } catch (error) {
       console.log(error);
@@ -67,12 +79,14 @@ export default class ListApprovals extends Component {
     return (config.siteState === config.siteStateCustomer ? CampaignRequestPage : undefined);
   }
 
-  PageSublevelEdit = () => {
+  PageSublevelEdit = (entityId) => {
     switch (config.siteState) {
       case config.siteStateDonor:
-        return DashPostCard;
+        const item = this.props.dashboard.data.filter(item => item.id === entityId);
+        return <DashPostCard product={item} onReturnToSublevelList={this.onReturnToSublevelList} readOnly={true} />
       case config.siteStateCustomer:
-        return CampaignRequestPage;
+        const data = this.props.dashboard.data.filter(data => data.id === entityId);
+        return <CampaignRequestPage product={data} onReturnToSublevelList={this.onReturnToSublevelList} />
       default:
         return undefined;
     }
@@ -106,7 +120,10 @@ export default class ListApprovals extends Component {
     const readOnly = config.siteState === config.siteStateCustomer;
     return (
       <div>
-        {dashboard.data.map(item => (pageEntityId === item.id ? DashPostCard.call(this, pageEntityId, readOnly) : ''))}
+        {dashboard.data.map(item => (
+          pageEntityId === item.id 
+          ? <DashPostCard product={item} onReturnToSublevelList={this.onReturnToSublevelList} readOnly={readOnly} />
+          : ''))}
       </div>
     )
   }
@@ -120,7 +137,8 @@ export default class ListApprovals extends Component {
   }
 
   renderLoop() {
-    const { dashboard, pageState, pageEntityId } = this.state;
+    const { dashboard } = this.props;
+    const { pageState, pageEntityId } = this.state;
     const totalCount = dashboard.data.length;
     const subline = `${totalCount} post${totalCount === 1 ? '' : 's'} tagged with "${dashboard.donationName}"`;
     
@@ -139,7 +157,7 @@ export default class ListApprovals extends Component {
 }
 
   renderOk() {
-    console.log('root-sublevel - renderOK: ', this.state);
+    console.log('root-sublevel - renderOK: ', this.props);
 
     return (
       <Layout>
@@ -172,3 +190,5 @@ export default class ListApprovals extends Component {
       return this.renderLoading();
   }
 };
+
+export default ReduxRoot(ListApprovals);

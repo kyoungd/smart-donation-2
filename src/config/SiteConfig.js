@@ -76,7 +76,7 @@ export default {
     }
   },
 
-  siteState: 'supplier',
+  siteState: 'donor',
 
   siteStateDonor: 'donor',
   siteStateCustomer: 'customer',
