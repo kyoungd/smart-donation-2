@@ -8,6 +8,7 @@ import TextField from '@material-ui/core/TextField';
 import styled from 'styled-components';
 import { media } from '../../utils/media';
 import ReduxRoot from 'hoc/ReduxRoot';
+import RenderLoading from 'components/RenderLoading';
 
 const Content = styled.div`
   grid-column: 2;
@@ -77,7 +78,7 @@ class DonationPage extends Component {
     const donation = data[donationIx];
   
     this.state = {
-      dataOk : false,
+      dataOk : true,
       donationIx,
       donation,
     };
@@ -99,10 +100,12 @@ class DonationPage extends Component {
   }
 
   saveNew = (donation) => {
+    this.setState({dataOk: false});
     this.props.saveNewDonation(donation, this.closeWindow);
   }
 
   saveEdit = (donation) => {
+    this.setState({dataOk: false});
     this.props.saveExistingDonation(donation, this.closeWindow);
   }
 
@@ -139,99 +142,107 @@ class DonationPage extends Component {
     )
   }
 
+  renderForm() {
+    return (
+      <form name="contact-form" method="post" onSubmit={this.submitHandler}>
+        <div>
+          <div>
+            <TextField
+              variant="outlined"
+              id="name"
+              label="name"
+              value={this.state.donation.title}
+              margin="normal"
+              onChange={this.changeHandler('title')}
+            />
+          </div>
+          <div>
+            <TextField
+              variant="outlined"
+              id="amount"
+              label="amount"
+              value={this.state.donation.amount}
+              margin="normal"
+              onChange={this.changeHandler('amount')}
+            />
+          </div>
+          <DateDiv>
+            <div>
+              <TextField
+                variant="outlined"
+                id="availableOn"
+                label="availableOn"
+                type="date"
+                value={this.state.donation.availableOn}
+                onChange={this.changeHandler('availableOn')}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </div>
+            <div>
+              <TextField
+                variant="outlined"
+                id="expireOn"
+                label="expireOn"
+                type="date"
+                value={this.state.donation.expireOn}
+                onChange={this.changeHandler('expireOn')}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </div>
+          </DateDiv>
+          {this.state.donation.id === 'new' && this.showAccount()}
+          <div>
+            <TextField
+              variant="outlined"
+              id="rules"
+              label="Rules"
+              multiline
+              rowsMax="3"
+              value={this.state.donation.rules}
+              onChange={this.changeHandler('rules')}
+              margin="normal"
+            />
+          </div>
+          <div>
+            <TextField
+              variant="outlined"
+              id="description"
+              label="description"
+              multiline
+              rowsMax="3"
+              value={this.state.donation.description}
+              onChange={this.changeHandler('description')}
+              margin="normal"
+            />
+          </div>
+          <SIconButtons>
+            <SButton>
+              <Button variant="outlined" color="primary" type="submit">
+                Submit
+              </Button>
+            </SButton>
+            <SButton>
+              <Button variant="outlined" color="primary" onClick={this.closeWindow}>
+                Cancel
+              </Button>
+            </SButton>
+          </SIconButtons>
+        </div>
+      </form>
+    )
+  }
+
   render () {
+    const { dataOk } = this.state;
     return (
       <Content>
         <p>Make Donation</p>
-        <form name="contact-form" method="post" onSubmit={this.submitHandler}>
-          <div>
-            <div>
-              <TextField
-                variant="outlined"
-                id="name"
-                label="name"
-                value={this.state.donation.title}
-                margin="normal"
-                onChange={this.changeHandler('title')}
-              />
-            </div>
-            <div>
-              <TextField
-                variant="outlined"
-                id="amount"
-                label="amount"
-                value={this.state.donation.amount}
-                margin="normal"
-                onChange={this.changeHandler('amount')}
-              />
-            </div>
-            <DateDiv>
-              <div>
-                <TextField
-                  variant="outlined"
-                  id="availableOn"
-                  label="availableOn"
-                  type="date"
-                  value={this.state.donation.availableOn}
-                  onChange={this.changeHandler('availableOn')}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </div>
-              <div>
-                <TextField
-                  variant="outlined"
-                  id="expireOn"
-                  label="expireOn"
-                  type="date"
-                  value={this.state.donation.expireOn}
-                  onChange={this.changeHandler('expireOn')}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </div>
-            </DateDiv>
-            {this.state.donation.id === 'new' && this.showAccount()}
-            <div>
-              <TextField
-                variant="outlined"
-                id="rules"
-                label="Rules"
-                multiline
-                rowsMax="3"
-                value={this.state.donation.rules}
-                onChange={this.changeHandler('rules')}
-                margin="normal"
-              />
-            </div>
-            <div>
-              <TextField
-                variant="outlined"
-                id="description"
-                label="description"
-                multiline
-                rowsMax="3"
-                value={this.state.donation.description}
-                onChange={this.changeHandler('description')}
-                margin="normal"
-              />
-            </div>
-            <SIconButtons>
-              <SButton>
-                <Button variant="outlined" color="primary" type="submit">
-                  Submit
-                </Button>
-              </SButton>
-              <SButton>
-                <Button variant="outlined" color="primary" onClick={this.closeWindow}>
-                  Cancel
-                </Button>
-              </SButton>
-            </SIconButtons>
-          </div>
-        </form>
+        { dataOk && this.renderForm() }
+        { !dataOk && <RenderLoading /> }
       </Content>
     )
   }

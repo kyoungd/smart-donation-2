@@ -14,3 +14,6 @@ export const SAVE_PRODUCT = 'save_product';
 
 export const GET_SUBLEVEL = 'get_sublevel';
 export const SAVE_APPROVAL = 'save_approval';
+
+export const NEW_REQUEST = 'new_request';
+export const SAVE_REQUEST = 'save_request';

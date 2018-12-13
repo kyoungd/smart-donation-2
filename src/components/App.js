@@ -12,7 +12,6 @@ const renderHeader = () => {
 export default function({children}) {
   return (
     <div>
-      <div>{ renderHeader() }</div>
       { children }
     </div>
   );

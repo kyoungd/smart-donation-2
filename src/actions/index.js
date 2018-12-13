@@ -7,13 +7,15 @@ import { saveNewCampaign, saveExistingCampaign } from './campaign';
 import { saveNewDonation, saveExistingDonation } from './donation';
 import { saveExistingProduct } from './product';
 import { getSublevel, saveApproval } from './sublevel';
+import { saveNewRequest, saveExistingRequest } from './campaignRequest';
 
 export { 
   getRoot, getRootHelper, setDataOk, setMessage,
   saveNewCampaign, saveExistingCampaign,
   saveNewDonation, saveExistingDonation,
   saveExistingProduct,
-  getSublevel, saveApproval
+  getSublevel, saveApproval,
+  saveNewRequest, saveExistingRequest
 }
 
 export function saveComment(comment) {

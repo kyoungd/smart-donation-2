@@ -13,6 +13,7 @@ import styled from 'styled-components';
 
 import StatusForDonor from './StatusForDonor';
 import ReduxRoot from 'hoc/ReduxRoot';
+import RenderLoading from 'components/RenderLoading';
 
 const _ = require('lodash');
 
@@ -40,6 +41,7 @@ class YesNoButton extends Component {
     super(props);
     const { product, readOnly } = this.props;
     this.state = {
+      dataOk: true,
       readOnly,
       product,
       rejectOpen: false,
@@ -54,6 +56,7 @@ class YesNoButton extends Component {
   UpdateApproval = () => {
     console.log('---------------  UpdateApproval callback exec.');
     const { product } = this.state;
+    this.setState({dataOk: false});
     this.props.saveApproval(product, this.callback);
   }
 
@@ -89,7 +92,7 @@ class YesNoButton extends Component {
   buttonLetter = letter => _.includes(['accepted', 'rejected'], this.state.product.status.toLowerCase()) ? letter + 'ED' : letter;
 
   readOnlyButtons = () => (
-    <StatusForDonor status={this.product.status} statusType="approval" />
+    <StatusForDonor status={this.state.product.status} statusType="approval" />
   )
 
   writeButtons = () => (
@@ -152,10 +155,12 @@ class YesNoButton extends Component {
   }
 
   render() {
+    const { dataOk } = this.state;
     console.log('ApprovalButton - render()', this.state);
     return (
       <div>
-        { this.state.readOnly === true ? this.readOnlyButtons() : this.writeButtons() }
+        { dataOk && (this.state.readOnly === true ? this.readOnlyButtons() : this.writeButtons()) }
+        { !dataOk && <RenderLoading /> }
       </div>
     );
   }

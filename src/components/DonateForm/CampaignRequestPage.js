@@ -1,7 +1,7 @@
 /* eslint jsx-a11y/label-has-for:0 */
 
+import React, { Component } from 'react';
 import update from 'immutability-helper';
-import React from 'react';
 import styled from 'styled-components';
 import Button from "@material-ui/core/Button";
 import TextField from '@material-ui/core/TextField';
@@ -13,12 +13,12 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 
 import { media } from '../../utils/media';
 import config from 'config/SiteConfig';
-import SetBlockchain from '../../models/api-post';
 import { ListSupplier } from '../../models/api-customer-campaignrequest';
 import { getResourceId } from '../../models/api';
+import ReduxRoot from 'hoc/ReduxRoot';
+import RenderLoading from 'components/RenderLoading';
 
 const uuidv1 = require('uuid/v1');
-const _ = require('lodash');
 
 const Content = styled.div`
   grid-column: 2;
@@ -70,114 +70,64 @@ const SButton = styled.div `
   margin-left: 1.5em;
 `;
 
-export default function CampaignRequestPage(campaignRequestId) {
-  const { dashboard } = this.state;
-  console.log('CampaignRequestPage ', dashboard.data, campaignRequestId);
-  const requestIx = dashboard.data.findIndex(item => item.id === campaignRequestId);
-  const request = dashboard.data[requestIx];
+class CampaignRequestPage extends Component {
+
+  constructor(props) {
+    super(props);
+
+    const { request } = this.props;
+
+    this.state = {
+      dataOk : true,
+      request,
+    };
+  }
+
   // console.log('CampaignRequestPage ', request);
 
-  const changeHandler = type => event => {
+  changeHandler = type => event => {
     this.setState({
-      dashboard: update(this.state.dashboard, { 
-        data:
-          {[requestIx] : {[type]: {$set: event.target.value}}}
-      })
+      request: update(this.state.request, { [type]: {$set: event.target.value} })
     })
   }
 
-  const nameid = (id, name) => `${id}#${name}`;
+  nameid = (id, name) => `${id}#${name}`;
 
-  const handlerSupplier = event => {
+  handlerSupplier = event => {
     console.log('======== changeSupplierHandler', event.target);
     
     const item = event.target.value.split('#');
     this.setState({
-      dashboard: update(this.state.dashboard, { 
-        data:
-          {[requestIx] : { supplier: {$set: item[0]}, supplierName: {$set: item[1]} }}
-      })
+      request: update(this.state.request, { supplier: {$set: item[0]}, supplierName: {$set: item[1]} })
     })
   }
 
-  const closeWindow = () => {
-    this.setState({
-      pageState: config.pageState[config.siteState].sublevelList,
-      pageEntityId: ''
-    });
+  closeWindow = () => {
+    this.props.onReturnToSublevelList();
   }
 
-  const saveNew = () => {
-    console.log('CampaignPage.saveNew() request 2 ', request);
-    let formData = _.cloneDeep(request);
-    formData.entityId = 'new';
-    formData.name = request.name;
-    formData.description = request.description;
-    formData.approvalStatus = request.status;
-    formData.status = request.rfp;
-    formData.supplier = request.supplier;
-    console.log('CampaignRequestPage.saveNew() request 3 ', JSON.stringify(formData, null, 2));
-    SetBlockchain('campaignrequest', formData)
-      .then(result => {
-        console.log('CampaignRequestPage.saveNew() request saved 1 ');
-        this.setState({
-          dashboard: update(this.state.dashboard, { 
-            data:
-              {[requestIx] : {id: {$set: result.data.entityId}}}
-          })
-        }, () => {
-          console.log('CampaignRequestPage.saveNew() request saved 2 ');
-          let newblock = this.state.dashboard.data.filter(item => item.id === 'blank');
-          newblock.id = 'new';
-          this.setState(prevState => ({
-            ...prevState,
-            dashboard: {
-              ...prevState.dashboard,
-              data: [...this.state.dashboard.data, newblock]
-            }
-          }));
-        })
-      })
-      .catch(err => {
-        console.log('CampaignRequestPage.saveNew() error ', err);
-      })
-    closeWindow();
+  saveNew = (request) => {
+    this.setState({dataOk: false});
+    this.props.saveNewRequest(request, this.closeWindow);
   }
 
-  const saveEdit = () => {
-    let formData = _.cloneDeep(request);
-    formData.name = request.name;
-    formData.entityId = request.id;
-    formData.description = request.description;
-    formData.approvalStatus = request.status;
-    formData.status = request.rfp;
-    formData.supplier = request.supplier;
-    console.log('saveEdit: 1', formData);
-    SetBlockchain('campaignrequest', formData)
-      .then(result => {
-        console.log('saveEdit: 2');
-        if (result.status === 200) {
-          console.log('saveEdit: 3');
-          console.log(result.statusText);
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
-    closeWindow();
+  saveEdit = (request) => {
+    this.setState({dataOk: false});
+    this.props.saveExistingRequest(request, this.closeWindow);
   }
 
-  const submitHandler = event => {
+  submitHandler = event => {
     event.preventDefault();
+    const { request } = this.state;
     console.log('Request submitHandler --------', request);
-    if (request.id === 'new') saveNew();
-    else saveEdit();
+    if (request.id === 'new') this.saveNew(request);
+    else this.saveEdit(request);
   }
 
-  return (
-    <Content>
-      <p>Request for Proposal</p>
-      <form name="contact-form" method="post" onSubmit={submitHandler}>
+  renderForm() {
+    const { request } = this.state;
+    return (
+      <form name="contact-form" method="post" onSubmit={this.submitHandler}>
         <div>
           <div>
             <TextField 
@@ -186,7 +136,7 @@ export default function CampaignRequestPage(campaignRequestId) {
               label="name"
               value={request.name}
               margin="normal"
-              onChange={changeHandler('name')}
+              onChange={this.changeHandler('name')}
             />
           </div>
           <div>
@@ -197,7 +147,7 @@ export default function CampaignRequestPage(campaignRequestId) {
               multiline
               rowsMax="3"
               value={request.description}
-              onChange={changeHandler('description')}
+              onChange={this.changeHandler('description')}
               margin="normal"
             />
           </div>
@@ -212,13 +162,13 @@ export default function CampaignRequestPage(campaignRequestId) {
                 Choose Supplier
               </InputLabel>
               <Select
-                onChange={handlerSupplier}
-                value={ nameid(getResourceId(request.supplier), request.supplierName) }
+                onChange={this.handlerSupplier}
+                value={ this.nameid(getResourceId(request.supplier), request.supplierName) }
                 input={<OutlinedInput labelWidth={100} name="age" id="outlined-age-simple" />}
               >
                 { 
-                  ListSupplier(dashboard.data, dashboard.allSupplier, request).map(s =>
-                    <MenuItem disabled={s.checked} value={nameid(s.id, s.name)} key={uuidv1()}><em>{s.name}</em></MenuItem>) 
+                  ListSupplier(this.props.dashboard.data, this.props.dashboard.allSupplier, request).map(s =>
+                    <MenuItem disabled={s.checked} value={this.nameid(s.id, s.name)} key={uuidv1()}><em>{s.name}</em></MenuItem>) 
                 }
               </Select>
             </FormControl>
@@ -236,7 +186,7 @@ export default function CampaignRequestPage(campaignRequestId) {
             </InputLabel>
             <Select
               value={request.rfp}
-              onChange={changeHandler('rfp')}
+              onChange={this.changeHandler('rfp')}
               input={<OutlinedInput labelWidth={100} name="rfp" id="outlined-rfp-simple" />}
             >
               {config.siteStatus.map(s => <MenuItem value={s} key={uuidv1()}><em>{s}</em></MenuItem>)}
@@ -251,17 +201,25 @@ export default function CampaignRequestPage(campaignRequestId) {
             </Button>
           </SButton>
           <SButton>
-            <Button variant="outlined" color="primary" onClick={() => {
-              this.setState({
-                pageState: config.pageState[config.siteState].sublevelList,
-                pageEntityId: ''
-              });
-            }}>
+            <Button variant="outlined" color="primary" onClick={this.closeWindow}>
               Cancel
             </Button>
           </SButton>
         </SIconButtons>
       </form>
-    </Content>
-  )
+    )
+  }
+
+  render() {
+    const { dataOk } = this.state;
+    return (
+      <Content>
+        <p>Request for Proposal</p>
+        { dataOk && this.renderForm() }
+        { !dataOk && <RenderLoading /> }
+      </Content>
+    )
+  }
 }
+
+export default ReduxRoot(CampaignRequestPage);

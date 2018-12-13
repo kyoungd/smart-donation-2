@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components';
+
 import { Layout, Wrapper } from 'components';
 import { media } from '../utils/media';
 import CampaignCard from '../components/Dashboard/CampaignCard';
@@ -9,8 +10,9 @@ import DonationPage from '../components/DonateForm/DonationPage';
 import CampaignPage from '../components/DonateForm/CampaignPage';
 import ProductPage from '../components/DonateForm/ProductPage';
 import SupplierRequestProductCard from '../components/Dashboard/SupplierRequestProductCard';
-import DashPostCardRoot from '../components/Dashboard/DashPostCardRoot';
+import DashPostCard from '../components/Dashboard/DashPostCard';
 import ReduxRoot from 'hoc/ReduxRoot';
+import RenderLoading from 'components/RenderLoading';
 
 const Content = styled.div`
   grid-column: 2;
@@ -123,7 +125,7 @@ class ListDonation extends Component {
       case config.pageState[config.siteState].post:
         const oneData = data.find(item => pageEntityId === item.id);
         console.log('calling root-post', oneData);
-        return <div>{DashPostCardRoot.call(this, oneData, true)}</div>;
+        return <div><DashPostCard product={oneData} onReturnToSublevelList={this.onReturnToSublevelList} readOnly={true} /></div>;
       default:
         console.log('main-renderer ', pageState);
         return '';
@@ -140,10 +142,6 @@ class ListDonation extends Component {
     )
   }
 
-  renderLoading() {
-    return <div>LOADING...</div>
-  }
-
   render() {
     const { dataRootOk, dataRootHelperOk } = this.state;
 
@@ -154,7 +152,7 @@ class ListDonation extends Component {
             { config.pageState[config.siteState].rootAdd !== '' && CampaignAddButton.call(this, 'root') }
           </TitleArea>
           <Content>
-            { dataRootOk && dataRootHelperOk ? this.renderOk() : this.renderLoading() }
+            { dataRootOk && dataRootHelperOk ? this.renderOk() : <RenderLoading /> }
           </Content>
         </Wrapper>
       </Layout>

@@ -10,6 +10,7 @@ import DashPostCard from '../components/Dashboard/DashPostCard';
 import CampaignAddButton from '../components/Dashboard/CampaignAddButton';
 import CampaignRequestPage from '../components/DonateForm/CampaignRequestPage';
 import ReduxRoot from 'hoc/ReduxRoot';
+import RenderLoading from 'components/RenderLoading';
 
 const Content = styled.div`
   grid-column: 2;
@@ -75,20 +76,23 @@ class ListApprovals extends Component {
     }
   }
 
-  PageSublevelAdd = () => {
-    return (config.siteState === config.siteStateCustomer ? CampaignRequestPage : undefined);
+  PageSublevelAdd = entityId => {
+    const data = this.props.dashboard.data.find(data => data.id === entityId);
+    return config.siteState === config.siteStateCustomer 
+    ? <CampaignRequestPage request={data} onReturnToSublevelList={this.onReturnToSublevelList} /> 
+    : '';
   }
-
+  
   PageSublevelEdit = (entityId) => {
     switch (config.siteState) {
       case config.siteStateDonor:
-        const item = this.props.dashboard.data.filter(item => item.id === entityId);
+        const item = this.props.dashboard.data.find(item => item.id === entityId);
         return <DashPostCard product={item} onReturnToSublevelList={this.onReturnToSublevelList} readOnly={true} />
       case config.siteStateCustomer:
-        const data = this.props.dashboard.data.filter(data => data.id === entityId);
-        return <CampaignRequestPage product={data} onReturnToSublevelList={this.onReturnToSublevelList} />
+        const data = this.props.dashboard.data.find(data => data.id === entityId);
+        return <CampaignRequestPage request={data} onReturnToSublevelList={this.onReturnToSublevelList} />
       default:
-        return undefined;
+        return '';
     }
   }
 
@@ -129,11 +133,11 @@ class ListApprovals extends Component {
   }
 
   renderSublevelEdit(pageEntityId) {
-    return this.PageSublevelEdit().call(this, pageEntityId);
+    return this.PageSublevelEdit(pageEntityId);
   }
 
   renderSublevelAdd(dashboard) {
-    return this.PageSublevelAdd().call(this, 'new');
+    return this.PageSublevelAdd('new');
   }
 
   renderLoop() {
@@ -174,7 +178,7 @@ class ListApprovals extends Component {
       <Layout>
         <Wrapper>
           <Content>
-            <p>Loading...</p>
+            <RenderLoading />
           </Content>
         </Wrapper>
       </Layout>

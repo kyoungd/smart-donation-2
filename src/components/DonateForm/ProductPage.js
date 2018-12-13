@@ -12,6 +12,7 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 import { Subline } from 'components';
 import { EntityStateDdl } from '../../models/api-data-status';
 import ReduxRoot from 'hoc/ReduxRoot';
+import RenderLoading from 'components/RenderLoading';
 
 const uuidv1 = require('uuid/v1');
 
@@ -67,7 +68,7 @@ class ProductPage extends Component {
     const product = data[productIx];
  
     this.state = {
-      dataOk : false,
+      dataOk : true,
       productIx,
       product,
     };
@@ -91,90 +92,99 @@ class ProductPage extends Component {
   submitHandler = event => {
     event.preventDefault();
     console.log('Product submitHandler --------', this.state.product);
+    this.setState({dataOk: false});
     this.props.saveExistingProduct(this.state.product, this.closeWindow);
   }
 
-  render() {
-    // console.log('ProductPage  ---', product);
+  renderForm = () => {
     const subline = `STATUS: ${this.state.product.rfp} - - - - - APPROVAL: ${this.state.product.status} `;
     return (
+      <form name="contact-form" method="post" onSubmit={this.submitHandler}>
+        <Subline sectionTitle>
+          {subline} - - -
+      </Subline>
+        <TextField
+          variant="outlined"
+          id="name"
+          label="name"
+          value={this.state.product.name}
+          margin="normal"
+          onChange={this.changeHandler('name')}
+        />
+        <TextField
+          variant="outlined"
+          id="video"
+          label="video"
+          value={this.state.product.video}
+          margin="normal"
+          onChange={this.changeHandler('video')}
+        />
+        <TextField
+          variant="outlined"
+          id="excerpt"
+          label="excerpt"
+          multiline
+          rowsMax="2"
+          value={this.state.product.excerpt}
+          margin="normal"
+          onChange={this.changeHandler('excerpt')}
+        />
+        <TextField
+          variant="outlined"
+          id="html"
+          label="html"
+          multiline
+          rowsMax="4"
+          value={this.state.product.html}
+          margin="normal"
+          onChange={this.changeHandler('html')}
+        />
+        <EntityStatusDiv>
+          <FormControl variant="outlined">
+            <InputLabel
+              ref={ref => {
+                this.InputLabelRef = ref;
+              }}
+              htmlFor="outlined-age-simple"
+            >
+              Product Status
+          </InputLabel>
+            <Select
+              value={this.state.product.rfp}
+              onChange={this.changeHandler('rfp')}
+              input={<OutlinedInput labelWidth={100} name="rfp" id="outlined-rfp-simple" />}
+            >
+              {EntityStateDdl(this.state.product.rfp).map(s => <MenuItem value={s.value} key={uuidv1()}><em>{s.name}</em></MenuItem>)}
+            </Select>
+          </FormControl>
+        </EntityStatusDiv>
+        <SIconButtons>
+          <SButton>
+            <Button variant="outlined" color="primary" type="submit">
+              Submit
+          </Button>
+          </SButton>
+          <SButton>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={this.closeWindow}
+            >
+              Cancel
+          </Button>
+          </SButton>
+        </SIconButtons>
+      </form>
+    )
+  }
+
+  render() {
+    const { dataOk } = this.state;
+    // console.log('ProductPage  ---', product);
+    return (
       <RootPage>
-        <form name="contact-form" method="post" onSubmit={this.submitHandler}>
-            <Subline sectionTitle>
-              {subline} - - - 
-            </Subline>
-              <TextField
-                variant="outlined"
-                id="name"
-                label="name"
-                value={this.state.product.name}
-                margin="normal"
-                onChange={this.changeHandler('name')}
-              />
-              <TextField
-                variant="outlined"
-                id="video"
-                label="video"
-                value={this.state.product.video}
-                margin="normal"
-                onChange={this.changeHandler('video')}
-              />
-              <TextField
-                variant="outlined"
-                id="excerpt"
-                label="excerpt"
-                multiline
-                rowsMax="2"
-                value={this.state.product.excerpt}
-                margin="normal"
-                onChange={this.changeHandler('excerpt')}
-              />
-              <TextField
-                variant="outlined"
-                id="html"
-                label="html"
-                multiline
-                rowsMax="4"
-                value={this.state.product.html}
-                margin="normal"
-                onChange={this.changeHandler('html')}
-              />
-              <EntityStatusDiv>
-                <FormControl variant="outlined">
-                  <InputLabel
-                    ref={ref => {
-                      this.InputLabelRef = ref;
-                    }}
-                    htmlFor="outlined-age-simple"
-                  >
-                    Product Status
-                  </InputLabel>
-                  <Select
-                    value={this.state.product.rfp}
-                    onChange={this.changeHandler('rfp')}
-                    input={<OutlinedInput labelWidth={100} name="rfp" id="outlined-rfp-simple" />}
-                  >
-                    {EntityStateDdl(this.state.product.rfp).map(s => <MenuItem value={s.value} key={uuidv1()}><em>{s.name}</em></MenuItem>)}
-                  </Select>
-                </FormControl>
-              </EntityStatusDiv>
-              <SIconButtons>
-                <SButton>
-                  <Button variant="outlined" color="primary" type="submit">
-                    Submit
-                  </Button>
-                </SButton>
-                <SButton>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={this.closeWindow}
-                  >
-                    Cancel
-                  </Button>
-                </SButton>
-              </SIconButtons>
-        </form>
+        { dataOk && this.renderForm() }
+        { !dataOk && <RenderLoading /> }
       </RootPage>
     );
   }
